@@ -24,6 +24,7 @@ public class AuthController {
   @Autowired
   private UserService userService;
 
+  //Register Endpoint
   @PostMapping("/register")
   public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
     userService.registerUser(request);
@@ -32,6 +33,7 @@ public class AuthController {
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
+  //Login Endpoint
   @PostMapping("/login")
   public ResponseEntity<?> login(@RequestBody LoginRequest request) {
     String token = userService.verify(request);
@@ -40,6 +42,7 @@ public class AuthController {
     return ResponseEntity.ok(response);
   }
 
+  //Logout Endpoint
   @PostMapping("/logout")
   public ResponseEntity<?> logout(HttpServletRequest request) {
     userService.logout(request);
