@@ -23,75 +23,75 @@ import jakarta.servlet.http.HttpServletResponse;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-  @Autowired
-  private CustomUserDetailsService customUserDetailsService;
+    @Autowired
+    private CustomUserDetailsService customUserDetailsService;
 
-  @Autowired
-  private JwtAuthenticationFilter jwtAuthenticationFilter;
+    @Autowired
+    private JwtAuthenticationFilter jwtAuthenticationFilter;
 
-  //Used to hash password
-  @Bean
-  public PasswordEncoder passwordEncoder() {
-    return new BCryptPasswordEncoder();
-  }
+    //Used to hash password
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
-  //Perform Authentication using customUserDetailsService and validates credentials
-  @Bean
-  public AuthenticationProvider authenticationProvider() {
-    DaoAuthenticationProvider provider = new DaoAuthenticationProvider(customUserDetailsService);
-    provider.setPasswordEncoder(passwordEncoder());
+    //Perform Authentication using customUserDetailsService and validates credentials
+    @Bean
+    public AuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(customUserDetailsService);
+        provider.setPasswordEncoder(passwordEncoder());
 
-    return provider;
-  }
+        return provider;
+    }
 
-  //Used to manange the AuthenticationProvider
-  @Bean
-  public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-    return config.getAuthenticationManager();
-  }
+    //Used to manange the AuthenticationProvider
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
+    }
 
-  @Bean
-  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    http
-        // Disabled csrf
-        .csrf(csrf -> csrf.disable())
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+                // Disabled csrf
+                .csrf(csrf -> csrf.disable())
 
-        // Allow request from the this endpoints
-        .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/h2/**", "/api/auth/**", "/api/logout").permitAll()
-            .anyRequest().authenticated())
+                // Allow request from this endpoints
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/h2/**", "/api/auth/**", "/api/logout").permitAll()
+                        .anyRequest().authenticated())
 
-        // Default login form is disabled
-        .formLogin(form -> form.disable())
+                // Default login form is disabled
+                .formLogin(form -> form.disable())
 
-        // Allow the H2 console frames
-        .headers(headers -> headers.frameOptions(frame -> frame.disable()))
+                // Allow the H2 console frames
+                .headers(headers -> headers.frameOptions(frame -> frame.disable()))
 
-        // popup login is disable
-        .httpBasic(basic -> basic.disable())
+                // popup login is disable
+                .httpBasic(basic -> basic.disable())
 
-        // Custom exception handler for 401 unauthorized and 403 forbidden
-        .exceptionHandling(exc -> exc
-            .authenticationEntryPoint((request, response, authException) -> {
-              response.setContentType("application/json");
-              response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-              response.getWriter()
-                  .write("{\"error\": \"Unauthorized\", \"message\": \"Invalid or expired JWT token\"}");
-            })
-            .accessDeniedHandler((request, response, accessDeniedException) -> {
-              response.setContentType("application/json");
-              response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-              response.getWriter()
-                  .write(
-                      "{\"error\": \"Forbidden\", \"message\": \"You do not have permission to access this resource. Admin access required.\"}");
-            }))
+                // Custom exception handler for 401 unauthorized and 403 forbidden
+                .exceptionHandling(exc -> exc
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setContentType("application/json");
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            response.getWriter()
+                                    .write("{\"error\": \"Unauthorized\", \"message\": \"Invalid or expired JWT token\"}");
+                        })
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            response.setContentType("application/json");
+                            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                            response.getWriter()
+                                    .write(
+                                            "{\"error\": \"Forbidden\", \"message\": \"You do not have permission to access this resource. Admin access required.\"}");
+                        }))
 
-        //Use the authenticationProvider that was written above
-        .authenticationProvider(authenticationProvider())
-        
-        //Add the jwtAuthenticationFilter before the UsernamePasswordAuthenticationFilter
-        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                //Use the authenticationProvider that was written above
+                .authenticationProvider(authenticationProvider())
 
-    return http.build();
-  }
+                //Add the jwtAuthenticationFilter before the UsernamePasswordAuthenticationFilter
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
+    }
 }

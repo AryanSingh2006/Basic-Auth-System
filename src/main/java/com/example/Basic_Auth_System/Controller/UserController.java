@@ -1,5 +1,9 @@
 package com.example.Basic_Auth_System.Controller;
 
+import com.example.Basic_Auth_System.Dto.UserResponse;
+import com.example.Basic_Auth_System.Service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -14,36 +18,28 @@ import com.example.Basic_Auth_System.Model.User;
 @RequestMapping("/api")
 public class UserController {
 
-  //Protected endpoint (/api/me)
-  @GetMapping("/me")
-  public ResponseEntity<?> getCurrentUser() {
-    // Get current authenticated user from Spring Security context
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    @Autowired
+    private UserService userService;
 
-    // Check if user is authenticated
-    if (authentication == null || !authentication.isAuthenticated()) {
-      return ResponseEntity.status(401).body("User not authenticated");
+    //Protected endpoint (/api/me)
+    @GetMapping("/me")
+    public ResponseEntity<?> getCurrentUser() {
+        UserResponse user = userService.getCurrentUser();
+        if (user == null) {
+            return ResponseEntity.status(401).body("User not authenticated");
+        }
+        return ResponseEntity.ok(user);
     }
 
-    // Extract User object from authentication
-    User user = (User) authentication.getPrincipal();
-
-    //Return user
-    return ResponseEntity.ok(user);
-  }
-
-  //Admin only endpoint (/api/admin/users)
-  @PreAuthorize("hasRole('ADMIN')")
-  @GetMapping("/admin/users")
-  public ResponseEntity<?> getAdminDashboard() {
-    // Get current authenticated user from Spring Security context
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-    // Extract User object
-    User user = (User) authentication.getPrincipal();
-
-    //Return Admin response
-    return ResponseEntity.ok("Welcome Admin " + user.getUsername() + "! This is admin dashboard.");
-  }
+    //Admin only endpoint (/api/admin/users)
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/admin/users")
+    public ResponseEntity<?> getAdminDashboard() {
+        UserResponse user = userService.getCurrentUser();
+        if (user == null) {
+            return ResponseEntity.status(401).body("not auth");
+        }
+        return ResponseEntity.ok(user);
+    }
 
 }

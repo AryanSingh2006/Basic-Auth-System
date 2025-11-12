@@ -8,9 +8,9 @@ import com.example.Basic_Auth_System.Model.User;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
 
-  //Find user by there username
-  User findByUsername(String username);
+    //Find user by there username
+    User findByUsername(String username);
 
-  //check if the user exist in the database
-  boolean existsByUsername(String username);
+    //check if the user exist in the database
+    boolean existsByUsername(String username);
 }
