@@ -57,6 +57,7 @@ public class AuthService {
                 passwordEncoder.encode(request.getPassword()), //Hashed the password using the .encode()
                 request.getRole());
 
+
         // Save user to the Database
         userRepository.save(newUser);
     }

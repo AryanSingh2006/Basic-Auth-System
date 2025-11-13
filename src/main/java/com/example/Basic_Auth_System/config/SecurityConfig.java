@@ -55,7 +55,6 @@ public class SecurityConfig {
         http
                 // Disabled csrf
                 .csrf(csrf -> csrf.disable())
-
                 // Allow request from this endpoints
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/h2/**", "/api/auth/**", "/api/logout").permitAll()
