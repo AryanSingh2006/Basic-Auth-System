@@ -1,19 +1,13 @@
 package com.example.Basic_Auth_System.Dto;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
 public class UserResponse {
     private String username;
     private String role;
-
-    public UserResponse(String username, String role) {
-        this.username = username;
-        this.role = role;
-    }
-
-    public String getUsername() {
-        return this.username;
-    }
-
-    public String getRole() {
-        return this.role;
-    }
 }
