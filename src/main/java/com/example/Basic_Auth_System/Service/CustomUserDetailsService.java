@@ -1,5 +1,6 @@
 package com.example.Basic_Auth_System.Service;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -15,10 +16,10 @@ import com.example.Basic_Auth_System.Model.User;
 //We have defined the loadUserByUsername in the UserRepository
 //Later we are returning the user warp inside the UserPrincipal
 @Service
+@RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
     // Loads user details from the database by username.
     // Returns a UserDetails object that Spring Security can use for authentication.

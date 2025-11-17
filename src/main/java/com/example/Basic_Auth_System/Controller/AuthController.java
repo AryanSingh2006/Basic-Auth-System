@@ -1,6 +1,7 @@
 package com.example.Basic_Auth_System.Controller;
 
 import com.example.Basic_Auth_System.Dto.RegisterResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,10 +22,10 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
+@RequiredArgsConstructor
 public class AuthController {
 
-    @Autowired
-    private AuthService authService;
+    private final AuthService authService;
 
     //Register Endpoint
     @PostMapping("/register")

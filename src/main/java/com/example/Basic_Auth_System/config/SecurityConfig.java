@@ -1,5 +1,6 @@
 package com.example.Basic_Auth_System.config;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,13 +22,12 @@ import jakarta.servlet.http.HttpServletResponse;
 
 @Configuration
 @EnableMethodSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
-    @Autowired
-    private CustomUserDetailsService customUserDetailsService;
+    private final CustomUserDetailsService customUserDetailsService;
 
-    @Autowired
-    private JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     //Used to hash password
     @Bean
@@ -55,6 +55,7 @@ public class SecurityConfig {
         http
                 // Disabled csrf
                 .csrf(csrf -> csrf.disable())
+
                 // Allow request from this endpoints
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/h2/**", "/api/auth/**", "/api/logout").permitAll()

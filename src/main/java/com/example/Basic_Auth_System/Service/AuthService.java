@@ -1,6 +1,7 @@
 package com.example.Basic_Auth_System.Service;
 
 import com.example.Basic_Auth_System.Model.UserPrincipal;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -20,61 +21,67 @@ import com.example.Basic_Auth_System.Repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 
 @Service
+@RequiredArgsConstructor
 public class AuthService {
-    @Autowired
-    private UserRepository userRepository;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
 
-    @Autowired
-    private AuthenticationManager authenticationManager;
+    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private JwtService jwtService;
+    private final AuthenticationManager authenticationManager;
+
+    private final JwtService jwtService;
 
     // Registration logic
     public void registerUser(RegisterRequest request) {
+
+        String username = request.getUsername();
+        String password = request.getPassword();
+        String role = request.getRole();
+
         // Validate input(If an of the input field is null it will throw an exception
-        if (request.getUsername() == null || request.getUsername().trim().isEmpty()) {
+        if (username == null || username.trim().isEmpty()) {
             throw new ValidationException("Username is required");
         }
-        if (request.getPassword() == null || request.getPassword().trim().isEmpty()) {
+        if (password == null || password.trim().isEmpty()) {
             throw new ValidationException("Password is required");
         }
-        if (request.getRole() == null || request.getRole().trim().isEmpty()) {
+        if (role == null || role.trim().isEmpty()) {
             throw new ValidationException("Role is required");
         }
 
         // Check if username already exists
-        if (userRepository.existsByUsername(request.getUsername())) {
+        if (userRepository.existsByUsername(username)) {
             throw new DuplicateUsernameException("Username already exists");
         }
 
+        String encodedPassword = passwordEncoder.encode(password);
         // Create new user with hashed password
         User newUser = new User(
-                request.getUsername(),
-                passwordEncoder.encode(request.getPassword()), //Hashed the password using the .encode()
-                request.getRole());
+                username,
+                encodedPassword,
+                role);
 
-
-        // Save user to the Database
         userRepository.save(newUser);
     }
 
     public String verify(LoginRequest request) {
+
+        String username = request.getUsername();
+        String password = request.getPassword();
+
         // Validate input(If any of the input field is null or empty this will throw an exception)
-        if (request.getUsername() == null || request.getUsername().trim().isEmpty()) {
+        if (username == null || username.trim().isEmpty()) {
             throw new ValidationException("Username is required");
         }
-        if (request.getPassword() == null || request.getPassword().trim().isEmpty()) {
+        if (password == null || password.trim().isEmpty()) {
             throw new ValidationException("Password is required");
         }
 
         try {
             // Authenticate user credentials
             Authentication authenticate = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
+                    new UsernamePasswordAuthenticationToken(username, password));
 
             // Get the authenticated user from repository
             UserPrincipal userPrincipal = (UserPrincipal) authenticate.getPrincipal();
@@ -92,7 +99,7 @@ public class AuthService {
 
         // Check the header exist and has Bearer as prefix
         if (header == null || !header.startsWith("Bearer ")) {
-            throw new IllegalArgumentException("Missing or invalid Authorization header");
+            throw new ValidationException("Missing or invalid Authorization header");
         }
 
         // Extract token from the header

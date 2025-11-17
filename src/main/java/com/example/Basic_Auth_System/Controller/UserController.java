@@ -2,6 +2,7 @@ package com.example.Basic_Auth_System.Controller;
 
 import com.example.Basic_Auth_System.Dto.UserResponse;
 import com.example.Basic_Auth_System.Service.UserService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,10 +17,10 @@ import com.example.Basic_Auth_System.Model.User;
 
 @RestController
 @RequestMapping("/api")
+@RequiredArgsConstructor
 public class UserController {
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
 
     //Protected endpoint (/api/me)
     @GetMapping("/me")

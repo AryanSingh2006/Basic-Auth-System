@@ -7,6 +7,7 @@ import java.util.Set;
 
 import javax.crypto.SecretKey;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -19,76 +20,77 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 
 @Service
+@Slf4j
 public class JwtService {
 
-  //jwt secret stored in the application.properties
-  @Value("${jwt.secret}")
-  private String jwtsecretKey;
+    //jwt secret stored in the application.properties
+    @Value("${jwt.secret}")
+    private String jwtSecretKey;
 
-  // HashSet to store blacklisted tokens (tokens that have been logged out)
-  private final Set<String> blacklistedTokens = new HashSet<>();
+    // HashSet to store blacklisted tokens (tokens that have been logged out)
+    private final Set<String> blacklistedTokens = new HashSet<>();
 
-  //Generates a Secret Key with the help of HMAC
-  private SecretKey getSecretKey() {
-    return Keys.hmacShaKeyFor(jwtsecretKey.getBytes(StandardCharsets.UTF_8));
-  }
-
-  //Generates Token 
-  public String generateToken(User user) {
-    return Jwts.builder()
-        .subject(user.getUsername())
-        .claim("userId", user.getId().toString())
-        .issuedAt(new Date())
-        .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 10)) // 10 minutes
-        .signWith(getSecretKey())
-        .compact();
-  }
-
-  //Extracts username from the token
-  public String extractUsername(String token) {
-    try {
-      Claims claims = Jwts.parser()
-          .verifyWith(getSecretKey())
-          .build()
-          .parseSignedClaims(token)
-          .getPayload();
-
-      return claims.getSubject(); // Returns username
-    } catch (Exception e) {
-      System.out.println("Error extracting username: " + e.getMessage());
-      return null;
+    //Generates a Secret Key with the help of hmac
+    private SecretKey getSecretKey() {
+        return Keys.hmacShaKeyFor(jwtSecretKey.getBytes(StandardCharsets.UTF_8));
     }
-  }
-  
-  //Validate token
-  public boolean validateToken(String token) {
-    try {
-      Jwts.parser()
-          .verifyWith(getSecretKey())
-          .build()
-          .parseSignedClaims(token);
 
-      return true;
-    } catch (ExpiredJwtException e) {
-      System.out.println("Token has expired: " + e.getMessage());
-      return false;
-    } catch (JwtException e) {
-      System.out.println("Invalid JWT token: " + e.getMessage());
-      return false;
-    } catch (Exception e) {
-      System.out.println("Token validation error: " + e.getMessage());
-      return false;
+    //Generates Token
+    public String generateToken(User user) {
+        return Jwts.builder()
+                .subject(user.getUsername())
+                .claim("userId", user.getId().toString())
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 10)) // 10 minutes
+                .signWith(getSecretKey())
+                .compact();
     }
-  }
 
-  // Add token to blacklist when user logs out
-  public void blacklistToken(String token) {
-    blacklistedTokens.add(token);
-  }
+    //Extracts username from the token
+    public String extractUsername(String token) {
+        try {
+            Claims claims = Jwts.parser()
+                    .verifyWith(getSecretKey())
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
 
-  // Check if token is blacklisted (logged out)
-  public boolean isTokenBlacklisted(String token) {
-    return blacklistedTokens.contains(token);
-  }
+            return claims.getSubject(); // Returns username
+        } catch (Exception e) {
+            log.error("Error extracting username", e);
+            return null;
+        }
+    }
+
+    //Validate token
+    public boolean validateToken(String token) {
+        try {
+            Jwts.parser()
+                    .verifyWith(getSecretKey())
+                    .build()
+                    .parseSignedClaims(token);
+
+            return true;
+        } catch (ExpiredJwtException e) {
+            log.warn("Token expired");
+            return false;
+        } catch (JwtException e) {
+            log.warn("Invalid JWT token");
+            return false;
+        } catch (Exception e) {
+            log.error("Token validation error", e);
+            return false;
+        }
+    }
+
+    // Add token to blacklist when user logs out
+    public void blacklistToken(String token) {
+        blacklistedTokens.add(token);
+    }
+
+    // Check if token is blacklisted (logged out)
+    public boolean isTokenBlacklisted(String token) {
+        return blacklistedTokens.contains(token);
+    }
 
 }

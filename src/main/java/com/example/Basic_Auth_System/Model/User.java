@@ -29,4 +29,10 @@ public class User {
 
     @Column(nullable = false)
     private String role; // USER / ADMIN
+
+    public User(String username, String password, String role) {
+        this.username = username;
+        this.password = password;
+        this.role = role;
+    }
 }
